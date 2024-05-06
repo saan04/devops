@@ -1,0 +1,15 @@
+plugins {
+    id 'java'
+}
+repositories {
+    mavenCentral()  // Add Maven Central repository
+}
+
+dependencies {
+    implementation 'com.google.cloud:google-cloud-translate:2.2.0'
+}
+
+task runSpeechToText(type: JavaExec) {
+    main = 'com.example.TextTranslator'
+    classpath = sourceSets.main.runtimeClasspath
+}

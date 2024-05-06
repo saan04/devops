@@ -1,0 +1,22 @@
+plugins {
+    id 'java'
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        url "https://maven.google.com"
+        allowInsecureProtocol(true)
+    }
+}
+
+dependencies {
+    implementation 'com.google.protobuf:protobuf-java:3.18.1'
+    implementation 'com.google.auth:google-auth-library-oauth2-http:1.2.1'
+    implementation 'com.google.cloud:google-cloud-speech:2.2.0'
+}
+
+task runSpeechToText(type: JavaExec) {
+    main = 'com.example.SpeechToTextTranslator'
+    classpath = sourceSets.main.runtimeClasspath
+}

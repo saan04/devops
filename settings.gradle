@@ -1,0 +1,4 @@
+rootProject.name = 'gradle-translation'
+
+include 'speech-to-text', 'text-translation'
+

@@ -1,0 +1,25 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'com.sparkjava:spark-core:2.9.4'
+    implementation 'org.slf4j:slf4j-api:1.7.32'
+    implementation 'ch.qos.logback:logback-classic:1.2.6'
+}
+
+application {
+    // Define the main class for the application
+    mainClassName = 'org.example.App'
+}
+
+// Task to run the Spark Java application
+run {
+    // Set the main class for the run task
+    main = 'org.example.App'
+}

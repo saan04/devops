@@ -1,0 +1,16 @@
+syntax = "proto3";
+package example.gradletranslation;
+option java_multiple_files = true;
+option java_package = "org.example.gradletranslation";
+
+message audioRequest {
+  repeated int32 audioByte = 1;
+}
+
+message audioResponse {
+  string transcript = 1;
+}
+
+service Greeter {
+  rpc SendRequest (audioRequest) returns (stream audioResponse);
+}

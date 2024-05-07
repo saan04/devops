@@ -1,4 +1,4 @@
-rootProject.name = 'gradle-translation'
+rootProject.name = 'gradletranslation'
 
-include 'speech-to-text', 'text-translation'
+include 'speech-to-text', 'text-translation', 'webapp'
 

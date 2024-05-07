@@ -1,22 +1,18 @@
 package org.example;
 
-import spark.Request;
-import spark.Response;
+import org.example.bidirectional.client_two;
 import spark.Spark;
+
+import javax.servlet.MultipartConfigElement;
+import javax.servlet.http.Part;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import javax.servlet.MultipartConfigElement; // Add this import
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class App {
 
-    private static final Logger logger = LoggerFactory.getLogger(App.class);
-
     public static void main(String[] args) {
-        // Set the port for Spark
         Spark.port(8060);
 
         // Configure multipart handling
@@ -34,39 +30,53 @@ public class App {
                     "</form></body></html>";
         });
 
-        // Handle file upload
+        // Handle file upload and transcription
         Spark.post("/upload", (req, res) -> {
             try {
-                // Get the submitted file name
-                String fileName = req.raw().getPart("wavFile").getSubmittedFileName();
-                logger.info("Received file upload request: {}", fileName);
+                // Retrieve uploaded file
+                Part filePart = req.raw().getPart("wavFile");
+                String fileName = filePart.getSubmittedFileName();
 
                 // Create a temporary file to store the uploaded file
                 Path tempFile = Files.createTempFile("uploaded", ".wav");
 
-                try (InputStream input = req.raw().getPart("wavFile").getInputStream()) {
+                try (InputStream input = filePart.getInputStream()) {
                     // Copy the uploaded file to the temporary file
                     Files.copy(input, tempFile, StandardCopyOption.REPLACE_EXISTING);
-                    String result = "File uploaded successfully: " + fileName;
-                    logger.info(result);
-                    return result;
+                    System.out.println("File uploaded successfully: " + fileName);
+
+                    // Initialize gRPC client
+                    String host = "localhost";
+                    int port = 9090;
+                    client_two client = new client_two(host, port);
+
+                    // Read audio data from file
+                    int[] audioData = client_two.readAudioFile(tempFile.toString());
+
+                    // Send audio data for transcription asynchronously
+                    String transcription = client.sendAudioRequest(audioData);
+
+                    // Set the response content type and body
+                    res.type("text/html");
+                    res.status(200);
+                    res.body("<html><body><h2>Transcription:</h2><p>" + transcription + "</p></body></html>");
+
+                    return res.body(); // Return the response body immediately
                 } finally {
-                    // Delete the temporary file after processing
                     Files.deleteIfExists(tempFile);
                 }
             } catch (Exception e) {
-                // Log the error and return an error message
-                String errorMessage = "Error handling file upload";
-                logger.error(errorMessage, e);
+                System.err.println("Error handling file upload");
+                e.printStackTrace();
                 res.status(500); // Set HTTP response status to 500 Internal Server Error
-                return errorMessage;
+                return "Error handling file upload";
             }
         });
 
         // Configure global exception handling for uncaught exceptions
         Spark.exception(Exception.class, (e, req, res) -> {
-            // Log unexpected errors and set HTTP response status to 500
-            logger.error("Unexpected error occurred", e);
+            System.err.println("Unexpected error occurred");
+            e.printStackTrace();
             res.status(500);
             res.body("Unexpected error occurred");
         });
